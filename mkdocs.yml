@@ -1,0 +1,17 @@
+site_name: SUNRISE Documentation
+site_author: Robert Bosch GmbH
+site_description: This repository provides documentation and specifications for SUNRISE framework.
+copyright: SUNRISE Documentation © 2025 by Robert Bosch GmbH is licensed under CC BY-SA 4.0.
+repo_url: https://github.com/boschresearch/sunrise.documentation
+nav:
+  - Introduction: index.md
+  - about.md
+theme:
+  name: readthedocs
+  navigation_depth: 2
+extra_css:
+  - css/readthedocs_custom.css
+markdown_extensions:
+  - attr_list
+  - admonition
+  - pymdownx.superfences

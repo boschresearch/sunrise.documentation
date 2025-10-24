@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Start Web Preview",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "mkdocs",
+            "args": ["serve"],
+            "console": "integratedTerminal",
+        },
+        {
+            "name": "Build HTML",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "mkdocs",
+            "args": ["build"],
+            "console": "integratedTerminal",
+        },
+    ]
+}
