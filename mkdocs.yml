@@ -5,6 +5,10 @@ copyright: SUNRISE Documentation © 2025 by Robert Bosch GmbH is licensed under 
 repo_url: https://github.com/boschresearch/sunrise.documentation
 nav:
   - Introduction: index.md
+  - components.md
+  - workflow.md
+  - API Specifications: api_specification.md
+  - Data Formats: dataformats.md
   - about.md
 theme:
   name: readthedocs

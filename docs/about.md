@@ -9,7 +9,7 @@ The SUNRISE core developer team can be contacted via [e-mail](mailto:sunrise@bos
 ## Citing
 Cite this work as:
 ```
-Kraus, T., Sauer, A., & Feldner, I. SUNRISE - A Scalable Restful Interface for System Evaluation. https://github.com/boschresearch/sunrise.documentation
+Kraus, T., Sauer, A., & Feldner, I. SUNRISE - A Scalable Restful Interface for System Evaluation. https://github.com/boschresearch/sunrise.demonstrator
 ```
 
 ## License

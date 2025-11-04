@@ -1,0 +1,1756 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SUNRISE Evaluation API (EvalAPI)",
+    "summary": "Implementation of the EvalAPI to the SUNRISE Runtime Manager",
+    "description": "In the SUNRISE framework, the EvalAPI is the interface for front-end users to the Runtime Manager.",
+    "contact": {
+      "name": "SUNRISE Team",
+      "url": "https://www.bosch.com/research/",
+      "email": "sunrise@bosch.com"
+    },
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/version": {
+      "get": {
+        "summary": "Get the version of the Runtime Manager",
+        "description": "REST API endpoint to get the Runtime Manager version.\n\nReturns:\n    version (str): The version of this Runtime Manager.",
+        "operationId": "get_version_version_get",
+        "responses": {
+          "200": {
+            "description": "Version string",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session": {
+      "get": {
+        "summary": "Get the IDs of all existing experiments",
+        "description": "REST API endpoint for listing all available sessions.\n\nReturns:\n    session_ids (list[UUID]): List of all session IDs of available experiments.",
+        "operationId": "get_sessions_session_get",
+        "responses": {
+          "200": {
+            "description": "List of experiment id strings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "type": "array",
+                  "title": "Response Get Sessions Session Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new experiment",
+        "description": "REST API endpoint for creating a new experiment.\n\nParameters:\n    item (CreateSessionItem): Object with system selection and experiment metadata.\n\nReturns:\n    session_id (UUID): Session ID of the created experiment.",
+        "operationId": "create_session_session_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionItem",
+                "description": "A CreateSessionItem object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Experiment Id as string",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "Response Create Session Session Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session/{session_id}": {
+      "get": {
+        "summary": "Get experiment details",
+        "description": "REST API endpoint to get information about a specific session.\n\nParameters:\n    session_id (UUID): Session ID of the experiment.\n\nReturns:\n    session_info (dataformats.SessionInfo): An object containing information about the experiment session.",
+        "operationId": "get_session_session__session_id__get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SessionInfo object for the experiment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove an existing experiment",
+        "description": "REST API endpoint for removing an experiment. It will delete all artifacts of the session.\n\nWarning (!): Session content cannot be restored!\n\nParameters:\n    session_id (UUID): Session ID of the experiment.\n    force (bool): Deleted even if the session is still opened by another connection.\n                    Warning (!): Might lead to data corruption!",
+        "operationId": "delete_session_session__session_id__delete",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Force"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No response data",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session/{session_id}/parameter/{group}": {
+      "get": {
+        "summary": "Get all parameter values in the experiment by group",
+        "description": "REST API endpoint for listing all parameters and their values of a parameter group configured in an experiment.\n\nParameters:\n    session_id (UUID): Session ID of the experiment.\n    group (ParameterGroupIdentifier): Parameter group ('common', 'build' or 'run').\n\nReturns:\n    parameters (dict): Dictionary of parameters and values for the parameter group used in this session.",
+        "operationId": "get_session_parameters_session__session_id__parameter__group__get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ParameterGroupIdentifier"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dictionary with parameters and values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  },
+                  "title": "Response Get Session Parameters Session  Session Id  Parameter  Group  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Set the value of a parameter",
+        "description": "REST API endpoint for updating a parameter in an existing experiment.\n\nWarning (!): This might invalidate the results of previous build and/or run for this experiment!\n\nParameters:\n    session_id (UUID): Session ID of the experiment.\n    group (ParameterGroupIdentifier): Parameter group ('common', 'build' or 'run').\n    parameter (UpdateParameterItem): Object with parameter name and value.",
+        "operationId": "put_session_parameter_session__session_id__parameter__group__put",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ParameterGroupIdentifier"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateParameterItem",
+                "description": "New parameter value"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "No response data",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Set the value of a file parameter",
+        "description": "REST API endpoint for adding files to the session.\n\nWarning (!): This might invalidate the results of previous build and/or run for this experiment!\n\nParameters:\n    session_id (UUID): Session ID of the experiment.\n    group (ParameterGroupIdentifier): Parameter group ('common', 'build' or 'run').\n    param_name (str): Name of the file parameter.\n    file (UploadFile): Content to set the file parameter.",
+        "operationId": "post_session_parameter_session__session_id__parameter__group__post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ParameterGroupIdentifier"
+            }
+          },
+          {
+            "name": "parameter_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Parameter Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_post_session_parameter_session__session_id__parameter__group__post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "No response data",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Reset a parameter to its default value",
+        "description": "REST API endpoint to set a parameter to its default value.\n\nIn case of a file parameter, this will delete an already uploaded file and replace it by the default\nfile path. In any other case, the parameter value will be replaced by its default value.\n\nWarning (!): This might invalidate the results of previous build and/or run for this experiment!\n\nParameters:\n    session_id (UUID): Session ID of the experiment.\n    group (ParameterGroupIdentifier): Parameter group ('common', 'build' or 'run').\n    param_name (str): Name of the parameter.",
+        "operationId": "delete_session_parameter_session__session_id__parameter__group__delete",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ParameterGroupIdentifier"
+            }
+          },
+          {
+            "name": "parameter_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Parameter Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No response data",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session/{session_id}/build": {
+      "post": {
+        "summary": "Start the build-action of an experiment",
+        "description": "REST API endpoint for executing the system build.\n\nParameters:\n    session_id (UUID): Session ID of the experiment.\n    timeout (int): Optional timeout in seconds for this command.",
+        "operationId": "post_session_build_session__session_id__build_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "timeout",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "title": "Timeout"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No response data",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session/{session_id}/run": {
+      "post": {
+        "summary": "Start the run-action of an experiment",
+        "description": "REST API endpoint for executing the system run.\n\nParameters:\n    session_id (UUID): Session ID of the experiment.\n    timeout (int): Optional timeout in seconds for this command.",
+        "operationId": "post_session_run_session__session_id__run_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "timeout",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "title": "Timeout"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No response data",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session/{session_id}/stop": {
+      "post": {
+        "summary": "Stop the ongoing build-/run-action",
+        "description": "REST API endpoint for stopping immediately a building or running system.\n\nParameters:\n    session_id (UUID): Session ID of the experiment.",
+        "operationId": "post_session_stop_session__session_id__stop_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No response data",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session/{session_id}/status": {
+      "get": {
+        "summary": "Get the state of the experiment",
+        "description": "REST API endpoint for returning current session state in the SUNRISE workflow model.\n\nParameters:\n    session_id (UUID): Session ID of the experiment.\n\nReturns:\n    state (dataformats.State): Current state of requested session.",
+        "operationId": "get_session_state_session__session_id__status_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The experiment state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/State"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session/{session_id}/result": {
+      "get": {
+        "summary": "Get a list with information about experiment results",
+        "description": "REST API endpoint for getting a list containing the availability status for each result in the experiment.\n\nParameters:\n    session_id (UUID): Session ID of the experiment.\n\nReturns:\n    results info (list[ResultInfo]): List containing the availability of each result. In case a result is not\n                                     available, then the message field contains a detailed description why.",
+        "operationId": "get_session_results_session__session_id__result_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of ResultInfo objects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ResultInfo"
+                  },
+                  "title": "Response Get Session Results Session  Session Id  Result Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session/{session_id}/result/{name}": {
+      "get": {
+        "summary": "Get a result object",
+        "description": "REST API endpoint for getting a result object from the experiment after a successful run.\n\nParameters:\n    session_id (UUID): Session ID of the experiment.\n    name (str): Name of result object.\n\nReturns:\n    file (FileResponse): File object containing the requested result. The response header contains the file name and\n                         the data type.",
+        "operationId": "get_session_result_session__session_id__result__name__get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The result file",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/system": {
+      "get": {
+        "summary": "List all available system names",
+        "description": "REST API endpoint to get the list of available system names.\n\nReturns:\n    systems_list (list[str]): List containing the names of all available systems.",
+        "operationId": "get_systems_system_get",
+        "responses": {
+          "200": {
+            "description": "List of name strings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array",
+                  "title": "Response Get Systems System Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/system/{name}": {
+      "get": {
+        "summary": "List all available versions of a system",
+        "description": "REST API endpoint to get a list of available versions of a specific system.\n\nParameters:\n    name (str): Name of the requested system.\n\nReturns:\n    versions_list (list[str]): List containing the versions of the requested system.",
+        "operationId": "get_system_version_system__name__get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of version strings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Response Get System Version System  Name  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/system/{name}/{version}": {
+      "get": {
+        "summary": "Get the SysDef of a system",
+        "description": "REST API endpoint to get the definition of a system (SysDef).\n\nParameters:\n    name (str): Name of the system.\n    version (str): Version of the system.\n\nReturns:\n    system_definition (SysDef): The system definition object.",
+        "operationId": "get_system_definition_system__name___version__get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SysDef object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SysDef"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/system/{name}/{version}/description": {
+      "get": {
+        "summary": "Get the system description",
+        "description": "REST API endpoint to get the description of a system.\n\nParameters:\n    name (str): Name of the system.\n    version (str): Version of the system.\n\nReturns:\n    description (str): Description of the system as string with Markdown syntax.",
+        "operationId": "get_system_description_system__name___version__description_get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "String with Markdown syntax.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_post_session_parameter_session__session_id__parameter__group__post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File",
+            "description": "File for parameter"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_post_session_parameter_session__session_id__parameter__group__post"
+      },
+      "CreateSessionItem": {
+        "properties": {
+          "syscfg": {
+            "$ref": "#/components/schemas/SysCfg"
+          },
+          "creator": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Creator"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "remote": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remote",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "syscfg"
+        ],
+        "title": "CreateSessionItem",
+        "description": "Contains session configuration settings."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LogEntry": {
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "producer": {
+            "type": "string",
+            "title": "Producer"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp",
+          "producer",
+          "message"
+        ],
+        "title": "LogEntry",
+        "description": "Definition of a log entry inside the SessionInfo object"
+      },
+      "ParameterGroupIdentifier": {
+        "type": "string",
+        "enum": [
+          "common",
+          "build",
+          "run"
+        ],
+        "title": "ParameterGroupIdentifier",
+        "description": "Parameter group identifiers used by REST API (EvalAPI)."
+      },
+      "ResultInfo": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ResultTypes"
+          },
+          "is_available": {
+            "type": "boolean",
+            "title": "Is Available"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "type",
+          "is_available",
+          "message"
+        ],
+        "title": "ResultInfo",
+        "description": "Holds information about a result."
+      },
+      "ResultTypes": {
+        "type": "string",
+        "enum": [
+          "binary",
+          "text",
+          "vcd",
+          "fst",
+          "performance",
+          "simulation_speed",
+          "junit_xml",
+          "gprof",
+          "profile_csv"
+        ],
+        "title": "ResultTypes",
+        "description": "List of all pre-defined result types."
+      },
+      "SessionInfo": {
+        "properties": {
+          "dataformat": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataformat",
+            "default": "sessioninfo:0.3"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "system_name": {
+            "type": "string",
+            "title": "System Name"
+          },
+          "system_version": {
+            "type": "string",
+            "title": "System Version"
+          },
+          "creator_name": {
+            "type": "string",
+            "title": "Creator Name"
+          },
+          "creation_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Creation Date"
+          },
+          "session_description": {
+            "type": "string",
+            "title": "Session Description"
+          },
+          "session_state": {
+            "$ref": "#/components/schemas/State"
+          },
+          "session_logs": {
+            "items": {
+              "$ref": "#/components/schemas/LogEntry"
+            },
+            "type": "array",
+            "title": "Session Logs"
+          },
+          "syscfg": {
+            "$ref": "#/components/schemas/SysCfg"
+          }
+        },
+        "type": "object",
+        "required": [
+          "display_name",
+          "system_name",
+          "system_version",
+          "creator_name",
+          "creation_date",
+          "session_description",
+          "session_state",
+          "session_logs",
+          "syscfg"
+        ],
+        "title": "SessionInfo",
+        "description": "Definition of the session information data format."
+      },
+      "State": {
+        "type": "string",
+        "enum": [
+          "created",
+          "building",
+          "built",
+          "failed build",
+          "running",
+          "ran",
+          "failed run"
+        ],
+        "title": "State",
+        "description": "Definition of states of a Session."
+      },
+      "SysCfg": {
+        "properties": {
+          "dataformat": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataformat",
+            "default": "syscfg:0.3"
+          },
+          "system": {
+            "$ref": "#/components/schemas/SysCfgSystem"
+          },
+          "common_parameters": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "$ref": "#/components/schemas/SysCfgUrlParameter"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Common Parameters"
+          },
+          "build_parameters": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "$ref": "#/components/schemas/SysCfgUrlParameter"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Build Parameters"
+          },
+          "run_parameters": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "$ref": "#/components/schemas/SysCfgUrlParameter"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Parameters"
+          }
+        },
+        "type": "object",
+        "required": [
+          "system"
+        ],
+        "title": "SysCfg",
+        "description": "Definition of the system configuration file format (SysCfg)."
+      },
+      "SysCfgSystem": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "version"
+        ],
+        "title": "SysCfgSystem",
+        "description": "Definition of the system description part of the SysCfg file."
+      },
+      "SysCfgUrlParameter": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "credentials": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credentials"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "title": "SysCfgUrlParameter",
+        "description": "Definition of a URL-based file parameter entry in the SysCfg file."
+      },
+      "SysDef": {
+        "properties": {
+          "dataformat": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataformat",
+            "default": "sysdef:0.4"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "documentation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SysDefDoc"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "docker_image": {
+            "type": "string",
+            "title": "Docker Image"
+          },
+          "build_command": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Build Command"
+          },
+          "run_command": {
+            "type": "string",
+            "title": "Run Command"
+          },
+          "delete_command": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delete Command"
+          },
+          "common_parameters": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "$ref": "#/components/schemas/SysDefCmplxParameter"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Common Parameters"
+          },
+          "build_parameters": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "$ref": "#/components/schemas/SysDefCmplxParameter"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Build Parameters"
+          },
+          "run_parameters": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "$ref": "#/components/schemas/SysDefCmplxParameter"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Parameters"
+          },
+          "results": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/SysDefResult"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "version",
+          "docker_image",
+          "run_command"
+        ],
+        "title": "SysDef",
+        "description": "Definition of the system definition file format (SysDef)."
+      },
+      "SysDefCmplxParameter": {
+        "properties": {
+          "default_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Default Value"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SysDefParameterEnum"
+              },
+              {
+                "$ref": "#/components/schemas/SysDefParameterRange"
+              },
+              {
+                "$ref": "#/components/schemas/SysDefParameterFile"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meta"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "default_value"
+        ],
+        "title": "SysDefCmplxParameter",
+        "description": "Definition of a parameter of the SysDef file."
+      },
+      "SysDefDoc": {
+        "properties": {
+          "contact": {
+            "type": "string",
+            "title": "Contact"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string",
+                "format": "path"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "contact",
+          "summary",
+          "description"
+        ],
+        "title": "SysDefDoc",
+        "description": "Definition of System Documentation"
+      },
+      "SysDefParameterEnum": {
+        "properties": {
+          "values": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "items": {
+                  "type": "boolean"
+                },
+                "type": "array"
+              },
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Values"
+          }
+        },
+        "type": "object",
+        "required": [
+          "values"
+        ],
+        "title": "SysDefParameterEnum",
+        "description": "Definition of a enum constraint of a parameter of the SysDef file."
+      },
+      "SysDefParameterFile": {
+        "properties": {
+          "is_file": {
+            "type": "boolean",
+            "title": "Is File",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "SysDefParameterFile",
+        "description": "Definition of a file parameter in the SysDef file."
+      },
+      "SysDefParameterRange": {
+        "properties": {
+          "lower": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Lower"
+          },
+          "upper": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Upper"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lower",
+          "upper"
+        ],
+        "title": "SysDefParameterRange",
+        "description": "Definition of a min-max constraint of a parameter of the SysDef file."
+      },
+      "SysDefResult": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/ResultTypes"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "enabled_by": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled By"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "path"
+        ],
+        "title": "SysDefResult",
+        "description": "Definition of a complex result of the SysDef file."
+      },
+      "UpdateParameterItem": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "value"
+        ],
+        "title": "UpdateParameterItem",
+        "description": "Dataclass holding parameter values or file parameter content"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
